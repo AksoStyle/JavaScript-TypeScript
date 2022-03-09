@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kukacos</title>
+</head>
+<body>
+<canvas id="ex" height="600" width="600" style="border: 1px solid"></canvas>
+<script>
+    var c = document.getElementById("ex");
+    var ctx = c.getContext("2d");
+    var frameCNT = 0;
+
+    // valtozo a kukac kepenek
+    var wormImg;
+    // valtozo a repulo kepenek
+    var planeImg;
+    // a repulo kezdo x koordinataja
+    var planeX = c.width;
+    // a repulo kezdo y koordinataja
+    var planeY = 50;
+    // a kukac konstans y koordinataja
+    var wormY = 460;
+    // a kukac kezdo x koordinataja
+    var wormX = 300;
+    var intervalID;
+
+    // kukacos kep peldanyositasa
+    wormImg = new Image();
+    wormImg.src = "worm.png";
+
+    // repulos kep peldanyositasa
+    planeImg = new Image();
+    planeImg.onload = function(){
+        intervalID = setInterval(animate, 20);       
+    }
+    planeImg.src = "plane.png";
+    // a repulo mereteinek valtozoba mentese
+    var planeW = planeImg.width;
+    var planeH = planeImg.height;
+
+    // tomb definicio a bombaknak
+    var bombList = [];
+
+    // az animacioert felelos fuggveny
+    function animate() {
+        window.requestAnimationFrame(draw);
+        
+    }
+
+    // kirajzolasok megvalositasa
+    function draw() {
+        frameCNT++,
+
+        ctx.fillStyle = "#00eaff";
+        ctx.fillRect(0,0,600,600);
+        ctx.fillStyle = "#00ff00";
+        ctx.fillRect(0,500,600,100);
+        drawPlane();
+        drawWorm();
+
+        dropBomb();
+        drawBombs();
+        removeBombs();
+    }
+
+    // repulogep kirajzolasa
+    // ugyeljunk arra, hogy az a repulogep folytonos mozgast ir le
+    function drawPlane() {
+        ctx.drawImage(planeImg, planeX, planeY, planeW/4, planeH/4);
+        if(planeX < 0){
+            planeX = c.width;
+        }else{
+            planeX -= 3;
+        }
+    }
+
+    // kukac kirajzolasa
+    function drawWorm() {
+        ctx.drawImage(wormImg, wormX, wormY, 50,50);
+    }
+
+    // billentyuzet esemeny kezeles
+    // jobbra nyil - 39, balra nyil - 37
+    // Ugyeljunk arra, hogy ne menjunk ki a palyarol
+    function wormMove(e) {
+        
+        if(e.code == "ArrowLeft" && wormX > 0){
+            wormX -= 10;
+        } 
+        else if(e.code == "ArrowRight" && wormX < c.width){
+            wormX += 10;
+        }
+    }
+    document.body.addEventListener('keydown', wormMove);
+
+    // eger esemeny lekezelese
+    // Ugyeljunk arra, hogy ne menjunk ki a palyarol
+    function wormMouseMove(ev) {
+        wormX = ev.clientX;
+    }
+    c.addEventListener("mousemove", wormMouseMove);
+    // random idokozonkent dobjunk le egy bombat
+    function dropBomb() {
+        if(Math.random() > 0.985){
+            bombList.push({x : planeX + 120, y : planeY + 60});
+            
+        }
+    }
+
+    // ha leert a bomba vagy a listankban van mar kovetkezo, akkor vegyuk ki a listarol
+    function removeBombs() {
+        var activeBombs = [];
+        for(var i = 0; i < bombList.length; i++){
+            if(bombList[i].y < 600){
+                activeBombs.push(bombList[i]);
+            }
+            if(bombList[i].y < 460){
+                var dist = Math.abs((bombList[i].x + 10) - (wormX + 25));
+                if(dist <20){
+                    gameOver();
+                }
+            }
+            activeBombs = bombList;
+            
+        }
+    }
+
+    // hatter megrajzolasa
+    function drawBackground() {
+        ctx.fillStyle = "#95e9ff";
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.fillStyle = "green";
+        ctx.fillRect(0, 500, c.width, 100);
+    }
+
+    // a listaba gyujtott bombak kirajzolasa
+    function drawBombs() {
+        for (var i in bombList) {
+            var bomb = bombList[i];
+
+            ctx.fillStyle = "#5f5e65";
+            ctx.beginPath();
+            ctx.arc(bomb.x, bomb.y, 10, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillRect(bomb.x - 10, bomb.y - 20, 20, 20);
+            bomb.y += 6;
+        }
+    }
+
+    function gameOver(){
+        clearInterval(intervalID);
+    }
+</script>
+</body>
+</html>
