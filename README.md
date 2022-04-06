@@ -1,1 +1,1 @@
-# JavaScript-TypeScript
+# JavaScript-TypeScript_jquery
